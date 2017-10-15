@@ -1,7 +1,7 @@
 <template>
   <div class="recommend">
     <div class="recommend-content">
-      <div v-if="reommends.length" class="slider-wrapper">
+      <div v-if="recommends.length" class="slider-wrapper">
         <slider>
           <div v-for="item in recommends">
             <a :href="item.linkUrl">
@@ -30,11 +30,8 @@
     methods: {
       _getRecommend: function () {
         getRecommend().then((res) => {
-          console.log('res.code:' + res.code);
           if (res.code === ERR_OK) {
             this.recommends = res.data.slider;
-            console.log(this.recommends[0].linkUrl);
-            console.log(this.recommends[0].picUrl);
           }
         });
       }
@@ -48,11 +45,4 @@
 <style lang="stylus" rel="stylesheet/stylus">
   .recommend
     color: #fff
-    .recommend-content
-      .slider-wrapper
-        div
-          width: 100%
-          height: auto
-          a
-            display: inline-block
 </style>
