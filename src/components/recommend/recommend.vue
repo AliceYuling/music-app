@@ -16,16 +16,18 @@
 
 <script type="text/ecmascript-6">
   import Slider from 'base/slider/slider';
-  import {getRecommend} from 'api/recommend';
+  import {getRecommend, getDiscList} from 'api/recommend';
   import {ERR_OK} from 'api/config';
   export default {
     data () {
       return {
-        recommends: []
+        recommends: [],
+        discList: []
       };
     },
     created () {
       this._getRecommend();
+      this._getDiscList();
     },
     methods: {
       _getRecommend: function () {
@@ -33,6 +35,14 @@
           if (res.code === ERR_OK) {
             this.recommends = res.data.slider;
           }
+        });
+      },
+      _getDiscList: function () {
+        getDiscList().then((res) => {
+          if (res.code === ERR_OK) {
+            this.discList = res.data.list;
+          }
+          console.log(this.discList);
         });
       }
     },

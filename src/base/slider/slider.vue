@@ -42,22 +42,29 @@
           this._play();
         }
       }, 20);
+      window.addEventListener('resize', () => {            // 监听窗口大小变化，实时更新图片大小
+        if (!this.slider) {
+          return;
+        }
+        this._setSliderWidth(true);
+        this.slider.refresh();
+      });
+    },
+    destroyed () {                                         // 组件销毁后，需要clear计时器，以便释放内存
+      clearTimeout(this.timer);
     },
     methods: {
-      _setSliderWidth () {
+      _setSliderWidth (isResize) {
         this.children = this.$refs.sliderGroup.children;
-        console.log(this.children.length);
         let width = 0;
-        let sliderWidth = this.$refs.slider.clientWidth + 17;
+        let sliderWidth = this.$refs.slider.clientWidth;
         for (let i = 0; i < this.children.length; i++) {
           let child = this.children[i];
           addClass(child, 'slider-item');
           child.style.width = sliderWidth + 'px';
-          console.log(sliderWidth);
-          console.log(child.style.width);
           width += sliderWidth;
         }
-        if (this.loop) {
+        if (this.loop && !isResize) {
           width += 2 * sliderWidth;
         }
         this.$refs.sliderGroup.style.width = width + 'px';
@@ -75,15 +82,18 @@
         });
         this.slider.on('scrollEnd', () => {
           let pageIndex = this.slider.getCurrentPage().pageX;
-          console.log(pageIndex);
           if (this.loop) {
             pageIndex -= 1;
           }
           this.currentPageIndex = pageIndex;
+          if (this.autoPlay) {
+            clearTimeout(this.timer);
+            this._play();
+          }
         });
       },
       _initDots () {
-        console.log(this.children);
+        // console.log(this.children);
         this.dots = new Array(this.children.length);
       },
       _play () {
