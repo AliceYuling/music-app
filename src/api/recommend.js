@@ -15,16 +15,16 @@ export function getRecommend () {
 };
 
 export function getDiscList () {
-  const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg';
+  const url = '/api/getDiscList';             // ajax请求
 
   const data = Object.assign({}, commonParams, {
     platform: 'yqq',
     hostUin: 0,
     sin: 0,
     ein: 29,
-    sortId: 5,
-    needNewCode: 0,
     categoryId: 10000000,
+    needNewCode: 0,
+    sortId: 5,
     rnd: Math.random(),
     format: 'json'
   });
@@ -33,5 +33,5 @@ export function getDiscList () {
     params: data
   }).then((res) => {
     return Promise.resolve(res.data);
-  })
-}
+  });
+};

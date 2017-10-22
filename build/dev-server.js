@@ -12,7 +12,7 @@ const express = require('express')
 const webpack = require('webpack')
 const proxyMiddleware = require('http-proxy-middleware')
 const webpackConfig = require('./webpack.dev.conf')
-const axios = require('axios');
+const axios = require('axios')
 
 // default port where dev server listens for incoming traffic
 const port = process.env.PORT || config.dev.port
@@ -22,10 +22,11 @@ const autoOpenBrowser = !!config.dev.autoOpenBrowser
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
-const app = express()
+const app = express();
 
 var apiRoutes = express.Router();
-apiRoutes.get('api/getDiscList', function (req, res) {
+apiRoutes.get('/getDiscList', function (req, res) {
+  // 通过axios发送一个请求，同时修改host和referer，欺骗QQ服务端referer为c.y.qq.com
   var url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg';
   
   axios.get(url, {
@@ -34,14 +35,14 @@ apiRoutes.get('api/getDiscList', function (req, res) {
       host: 'c.y.qq.com'
     },
     params: req.query
-  }).then((response) => {
+  }).then((response) => {                                       // response为QQ音乐接口返回的response
     res.json(response.data);
   }).catch((e) => {
     console.log(e);
   });
 });
 
-app.use('api', apiRoutes);
+app.use('/api', apiRoutes);
 const compiler = webpack(webpackConfig)
 
 const devMiddleware = require('webpack-dev-middleware')(compiler, {
