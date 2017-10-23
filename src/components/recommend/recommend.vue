@@ -1,12 +1,12 @@
 <template>
   <div class="recommend">
-    <scroll class="recommend-content" :data="discList">
+    <scroll ref="scroll" class="recommend-content" :data="discList">
       <div>
         <div v-if="recommends.length" class="slider-wrapper">
           <slider>
             <div v-for="item in recommends">
               <a :href="item.linkUrl">
-                <img :src="item.picUrl" />
+                <img class="needsclick" :src="item.picUrl" @load="loadImage"/>
               </a>
             </div>
           </slider>
@@ -16,7 +16,7 @@
           <ul>
             <li v-for="item in discList">
               <div class="icon">
-                <img width="56" height= "60" :src="item.imgurl" />
+                <img width="56" height= "60" v-lazy="item.imgurl" />
               </div>
               <div class="text">
                 <h2 class="name" v-html="item.creator.name"></h2>
@@ -25,6 +25,10 @@
             </li>
           </ul>
         </div>
+      </div>
+      <div class="loading-container" v-show="!discList.length">
+        <loading>
+        </loading>
       </div>
     </scroll>
   </div>
@@ -35,6 +39,7 @@
   import {getRecommend, getDiscList} from 'api/recommend';
   import {ERR_OK} from 'api/config';
   import Scroll from 'base/scroll/scroll';
+  import Loading from 'base/loading/loading';
   export default {
     data () {
       return {
@@ -44,7 +49,9 @@
     },
     created () {
       this._getRecommend();
-      this._getDiscList();
+      setTimeout(() => {
+        this._getDiscList();
+      }, 100000);
     },
     methods: {
       _getRecommend: function () {
@@ -61,11 +68,18 @@
           }
           // console.log(this.discList);
         });
+      },
+      loadImage () {
+        if (!this.checkLoaded) {
+          this.$refs.scroll.refresh();
+          this.checkLoaded = true;
+        }
       }
     },
     components: {
       Slider,
-      Scroll
+      Scroll,
+      Loading
     }
   };
 </script>
@@ -73,6 +87,7 @@
 <style lang="stylus" rel="stylesheet/stylus">
   @import '~common/style/variable.styl'
   .recommend
+    overflow: hidden
     color: #fff
     .recommend-list
       .list-title
@@ -102,4 +117,9 @@
               margin-top: 8px
               font-size: $font-size-medium
               color: $color-text-d
+    .loading-container
+      position: absolute
+      width: 100%
+      top: 50%
+      // transform: translateY(-50%)
 </style>
