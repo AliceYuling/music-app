@@ -1,14 +1,92 @@
 <template>
-  <div class="singer">
-    singers
+  <div class="singer">    
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  export default {};
+  import {getSingerList} from 'api/singer';
+  import {ERR_OK} from 'api/config';
+  import Singer from 'common/js/singer';
+
+  const HOT_NAME = '热门';
+  const HOT_LENGTH = 10;
+  export default {
+    data () {
+      return {
+        singers: []
+      };
+    },
+    created () {
+      this._getSingerList();
+      setTimeout(() => {
+        this._normalizeSinger(this.singers);
+      }, 1000);
+    },
+    methods: {
+      _getSingerList () {
+        getSingerList().then((res) => {
+          if (res.code === ERR_OK) {
+            this.singers = res.data.list;
+            console.log(this.singers);
+          }
+        });
+      },
+      _normalizeSinger (list) {
+        let map = {
+          hot: {
+            title: HOT_NAME,
+            items: []
+          }
+        };
+
+        // 遍历歌手数组，将前十名歌手作为热门歌手
+        list.forEach((item, index) => {
+          if (index < HOT_LENGTH) {
+            map.hot.items.push(new Singer({
+              id: item.Fsinger_mid,
+              name: item.Fsinger_name
+            }));
+          }
+
+          // 将歌手列表按首字母分组
+          const key = item.Findex;
+
+          if (!map[key]) {
+            map[key] = {
+              title: key,
+              items: []
+            };
+          }
+
+          map[key].items.push(new Singer({
+            id: item.Fsinger_mid,
+            name: item.Fsinger_name
+          }));
+        });
+
+        // 提取出歌手数组并按首字母排序
+        let hot = [];
+        let singer = [];
+        for (let key in map) {
+          if (map[key].title.match(/[a-zA-Z]/)) {
+            singer.push(map[key]);
+          } else if (map[key].title === HOT_NAME) {
+            hot.push(map[key]);
+          }
+        }
+        singer.sort(function (a, b) {
+          return a.title.charCodeAt(0) - b.title.charCodeAt(0);
+        });
+        console.log(singer);
+      }
+    }
+  };
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .singer
-    color: #fff
+    position: fixed
+    top: 88px
+    bottom: 0
+    width:100%
 </style>
