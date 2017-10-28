@@ -45,6 +45,9 @@
       },
       refresh () {
         this.scroll && this.scroll.refresh();
+      },
+      scrollToElement () {
+        this.scroll && this.scrollToElement();
       }   
     },
     watch: {

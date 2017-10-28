@@ -11,20 +11,48 @@
         </ul>
       </li>
     </ul>
+    <div class="listview-shortcut">
+      <ul class="shortcut-list">
+        <li class="shortcut-item" v-for="(item,index) in shortcut" v-onclick="onShortcutTouchStart(event)" :data-index="index">
+          {{item}}
+        </li>
+      </ul>
+    </div>
   </scroll>
 </template>
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll';
+  import {getData} from 'common/js/dom.js';
   export default {
     props: {
       data: {
         type: Array,
         default: []
+      },
+      touch: {}
+    },
+    computed: {
+      shortcut () {
+        return this.data.map((group) => {
+          return group.title.substr(0, 1);
+        });
       }
     },
     components: {
       Scroll
+    },
+    methods: {
+      onShortcutTouchStart (e) {
+        this.touch.startY = e.target.touchY;
+        let touchIndex = getData(e.target, 'index');
+        scrollToElement(touchIndex);
+      },
+      onShortcutMove (e) {
+        this.touch.endY = e.target.touchY;
+        let moveIndex = this.touchendY / 18 | 0;
+        scrollToElement(moveIndex);
+      }
     }
   };
 </script>
@@ -66,4 +94,14 @@
               vertical-align: top
               color: $color-text
               font-size: $font-size-medium
+    .listview-shortcut
+      position: absolute
+      right: 0
+      top: 100px
+      .shortcut-list
+        .shortcut-item
+          width: 18px
+          height: 18px
+          color: $color-text
+          font-size: $font-size-small
 </style>
