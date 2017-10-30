@@ -42,7 +42,6 @@
 @import '~common/style/variable'
   .tab
     display: flex
-    width: 100%
     height: 44px
     line-height: 44px
     font-size: $font-size-medium

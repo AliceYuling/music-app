@@ -85,39 +85,44 @@
 <style lang="stylus" rel="stylesheet/stylus">
   @import '~common/style/variable.styl'
   .recommend
-    overflow: hidden
-    color: #fff
-    .recommend-list
-      .list-title
-        margin: 18px 0 18px
-        text-align: center
-        font-size: $font-size-medium-x
-        color: $color-theme
-      ul 
-        li
-          display: flex
-          justify-content: center
-          margin: 8px 0 8px 0
-          .icon
-            flex: 0 0 80px
-            text-align: center
-          .text
+    position: fixed
+    width: 100%
+    top: 88px
+    bottom:0
+    .recommend-content
+      height: 100%
+      overflow: hidden
+      .recommend-list
+        .list-title
+          margin: 18px 0 18px
+          text-align: center
+          font-size: $font-size-medium-x
+          color: $color-theme
+        ul 
+          li
             display: flex
-            flex: 1
-            flex-direction: column
-            .name
-              flex: 0 0 20px
-              line-height: 20px
-              font-size: $font-size-medium
-              color: $color-text
-            .desc
+            justify-content: center
+            margin: 8px 0 8px 0
+            .icon
+              flex: 0 0 80px
+              text-align: center
+            .text
+              display: flex
               flex: 1
-              margin-top: 8px
-              font-size: $font-size-medium
-              color: $color-text-d
-    .loading-container
-      position: absolute
-      width: 100%
-      top: 50%
-      // transform: translateY(-50%)
+              flex-direction: column
+              .name
+                flex: 0 0 20px
+                line-height: 20px
+                font-size: $font-size-medium
+                color: $color-text
+              .desc
+                flex: 1
+                margin-top: 8px
+                font-size: $font-size-medium
+                color: $color-text-d
+      .loading-container
+        position: absolute
+        width: 100%
+        top: 50%
+        // transform: translateY(-50%)
 </style>

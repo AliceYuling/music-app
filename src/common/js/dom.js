@@ -16,7 +16,7 @@ export function getData (el, attr, val) {
   let prefix = 'data-';
   let name = prefix + attr;
   if (val) {
-    el.setAttribute(name, val).apply(this.callee, arguments)
+    el.setAttribute(name, val);
   } else {
     return el.getAttribute(name);
   }

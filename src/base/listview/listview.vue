@@ -1,7 +1,7 @@
 <template>
-  <scroll class="listview">
+  <scroll class="listview" ref="listview" :data="data">
     <ul class="list-wrapper">
-      <li v-for="group in data" class="list-group">
+      <li v-for="group in data" class="list-group" ref="listgroup">
         <h2 class="group-title">{{group.title}}</h2>
         <ul>
           <li v-for="item in group.items" class="list-group-item">
@@ -11,9 +11,9 @@
         </ul>
       </li>
     </ul>
-    <div class="listview-shortcut">
+    <div class="listview-shortcut" v-on:touchstart="onShortcutTouchStart($event)" v-on:touchmove.stop.prevent="onShortcutTouchMove($event)">
       <ul class="shortcut-list">
-        <li class="shortcut-item" v-for="(item,index) in shortcut" v-onclick="onShortcutTouchStart(event)" :data-index="index">
+        <li class="shortcut-item" v-for="(item,index) in shortcut" :data-index="index">
           {{item}}
         </li>
       </ul>
@@ -23,14 +23,14 @@
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll';
-  import {getData} from 'common/js/dom.js';
+  import {getData} from 'common/js/dom';
+  const HEIGHT = 18;
   export default {
     props: {
       data: {
         type: Array,
         default: []
-      },
-      touch: {}
+      }
     },
     computed: {
       shortcut () {
@@ -39,19 +39,33 @@
         });
       }
     },
+    created () {
+      this.touch = {};           // 若在data 里设置的话会绑定getter， setter并监听变化
+    },
     components: {
       Scroll
     },
     methods: {
       onShortcutTouchStart (e) {
-        this.touch.startY = e.target.touchY;
         let touchIndex = getData(e.target, 'index');
-        scrollToElement(touchIndex);
+        console.log('touchIndex1:' + touchIndex);
+        let firstTouch = e.touches[0];
+        console.log('firstTouch1:' + firstTouch.pageY);
+        this.touch.y1 = firstTouch.pageY;
+        this.touch.touchIndex = touchIndex;
+        this._scrollTo(touchIndex);
       },
-      onShortcutMove (e) {
-        this.touch.endY = e.target.touchY;
-        let moveIndex = this.touchendY / 18 | 0;
-        scrollToElement(moveIndex);
+      onShortcutTouchMove (e) {
+        let firstTouch = e.touches[0];
+        console.log('firstTouch2:' + firstTouch.pageY);
+        this.touch.y2 = firstTouch.pageY;
+        let delta = (this.touch.y2 - this.touch.y1) / HEIGHT | 0;
+        console.log(delta);
+        let moveIndex = parseInt(this.touch.touchIndex) + delta;
+        this._scrollTo(moveIndex);
+      },
+      _scrollTo (index) {
+        this.$refs.listview.scrollToElement(this.$refs.listgroup[index], 0);
       }
     }
   };
@@ -61,8 +75,8 @@
   @import '~common/style/variable.styl'
   .listview
     position: relative
-    width: 100%
     height: 100%
+    width: 100%
     overflow: hidden
     background: $color-background
     .list-wrapper
@@ -100,8 +114,10 @@
       top: 100px
       .shortcut-list
         .shortcut-item
-          width: 18px
+          width: 30px
           height: 18px
+          list-style: none
+          text-align: center
           color: $color-text
           font-size: $font-size-small
 </style>

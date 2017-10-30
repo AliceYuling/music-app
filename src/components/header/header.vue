@@ -16,6 +16,7 @@
   
   .m-header
     position: relative
+    top: 0
     height: 44px
     line-height: 44px
     text-align: center

@@ -47,8 +47,11 @@
         this.scroll && this.scroll.refresh();
       },
       scrollToElement () {
-        this.scroll && this.scrollToElement();
-      }   
+        this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments);
+      },
+      scrollTo () {
+        this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments);
+      }
     },
     watch: {
       data () {                                   // 监测数据变化并刷新
