@@ -19,6 +19,10 @@
       data: {                                         // 组件的数据有可能是动态变化的，需要refresh
         type: Array,
         default: null
+      },
+      listenScroll: {
+        Type: Boolean,
+        default: false
       }
     },
     mounted () {
@@ -36,6 +40,13 @@
           probeType: this.probeType,
           click: this.click
         });
+
+        if (this.listenScroll) {
+          let me = this;
+          this.scroll.on('scroll', (pos) => {
+            me.$emit('scroll', pos);
+          })
+        }
       },
       enable () {
         this.scroll && this.scroll.enable();
