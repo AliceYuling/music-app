@@ -5,8 +5,10 @@
       <i class="icon-back"></i>
     </div> 
     <div class="background-img" :style="bgstyle" ref="bgimage">
+      <div class="filter" ref="filter"></div>
     </div>
-    <scroll :data="songs" class="list" ref="list">
+    <div class="bg-layer" ref="layer"></div>
+    <scroll :data="songs" @scroll="scroll" :probeType="probeType" :listenScroll="listenScroll" class="list" ref="list">
       <div class="song-list-wrapper" >
         <songlist :songs="songs"></songlist>
       </div>
@@ -18,6 +20,10 @@
 <script type="ecmascript-6">
   import Scroll from 'base/scroll/scroll';
   import Songlist from 'base/songlist/songlist';
+  import {prefixStyle} from 'common/js/dom.js';
+  const RESERVE_HEIGHT = 40;
+  const transform = prefixStyle('transform');
+  const backdropFilter = prefixStyle('backdrop-filter');
   export default {
     props: {
       songs: {
@@ -36,6 +42,8 @@
       }
     },
     mounted () {
+      this.imageHeight = this.$refs.bgimage.clientHeight;
+      this.minTranslateY = -this.imageHeight + RESERVE_HEIGHT;
       this.$refs.list.$el.style.top = `${this.$refs.bgimage.clientHeight}px`;
     },
     components: {
@@ -44,12 +52,52 @@
     },
     computed: {
       bgstyle () {
-        return `background-image: url(${this.bgImage})`;
+         return `background-image: url(${this.bgImage})`;
       }
+    },
+    created () {
+      this.probeType = 3;
+      this.listenScroll = true;
+    },
+    data () {
+      return {
+        posY: 0
+      };
     },
     methods: {
       backToSinger () {
         this.$router.push('/singer');
+      },
+      scroll (pos) {
+        this.posY = pos.y; 
+      }
+    },
+    watch: {
+      posY (newY) {
+        let zIndex = 0;
+        let scale =1;
+        let blur = 0;
+        let translateHeight = Math.max(newY, this.minTranslateY);
+        let scalePercent = Math.abs(newY / this.imageHeight);
+        this.$refs.layer.style[transform] = `translate3d(0,${translateHeight}px,0)`;
+        console.log(this.tranform);
+        if (newY > 0) {
+          scale = 1 + scalePercent;
+          zIndex = 10;
+        } else {
+          blur = Math.min(20 * scalePercent, 20);
+        }
+        if (newY < this.minTranslateY) {
+          zIndex = 10;
+          this.$refs.bgimage.style.paddingTop = 0;
+          this.$refs.bgimage.style.height = `${RESERVE_HEIGHT}px`;
+        } else {
+          this.$refs.bgimage.style.paddingTop = '70%';
+          this.$refs.bgimage.style.height = 0;
+        }
+        this.$refs.filter.style[backdropFilter] = `blur(${blur})`;
+        this.$refs.bgimage.style.zIndex = zIndex;
+        this.$refs.bgimage.style[transform] = `scale(${scale})`;
       }
     }
   }
@@ -87,18 +135,21 @@
       position: relative
       top: 0
       left: 0
-      z-index: 49
       width: 100%
       height: 0
       padding-top: 70%
       background-size: cover
+    .bg-layer
+      position: relative
+      height: 100%
+      background: $color-background
     .list
       position: fixed
       left: 0
       right: 0
       bottom: 0
       background: $color-background
-      overflow: hidden
+      // overflow: hidden
       .song-list-wrapper
         padding: 20px 30px
 </style>

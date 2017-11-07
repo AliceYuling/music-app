@@ -34,7 +34,8 @@
   .song-list
     .song-item
       width: 100%
-      height: 48px
+      height: 58px
+      padding-top: 10px
       list-style: none
       .content
         .title
