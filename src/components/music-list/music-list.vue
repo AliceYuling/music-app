@@ -3,24 +3,34 @@
     <h1 class="title">{{title}}</h1>
     <div class="back" @click="backToSinger">
       <i class="icon-back"></i>
-    </div> 
+    </div>
     <div class="background-img" :style="bgstyle" ref="bgimage">
       <div class="filter" ref="filter"></div>
+      <div class="play-wrapper">
+        <div class="play" v-show="songs.length>0" ref="play">
+          <i class="icon-play"></i>
+          <span class="text">随机播放全部</span>
+        </div>
+      </div>
     </div>
     <div class="bg-layer" ref="layer"></div>
     <scroll :data="songs" @scroll="scroll" :probeType="probeType" :listenScroll="listenScroll" class="list" ref="list">
       <div class="song-list-wrapper" >
-        <songlist :songs="songs"></songlist>
+        <songlist :songs="songs" @select="selectSong"></songlist>
+      </div>
+      <div class="loading-container">
+        <loading v-show="!songs.length"></loading>
       </div>
     </scroll>
-
   </div>
 </template>
 
 <script type="ecmascript-6">
+  import Loading from 'base/loading/loading';
   import Scroll from 'base/scroll/scroll';
   import Songlist from 'base/songlist/songlist';
   import {prefixStyle} from 'common/js/dom.js';
+  import {mapActions} from 'vuex';
   const RESERVE_HEIGHT = 40;
   const transform = prefixStyle('transform');
   const backdropFilter = prefixStyle('backdrop-filter');
@@ -48,7 +58,8 @@
     },
     components: {
       Songlist,
-      Scroll
+      Scroll,
+      Loading
     },
     computed: {
       bgstyle () {
@@ -70,7 +81,17 @@
       },
       scroll (pos) {
         this.posY = pos.y; 
-      }
+      },
+      selectSong (item, index) {
+        console.log(index);
+        this.selectPlay({
+          list: this.songs, 
+          index
+        });
+      },
+      ...mapActions([
+        'selectPlay'
+      ])
     },
     watch: {
       posY (newY) {
@@ -91,9 +112,11 @@
           zIndex = 10;
           this.$refs.bgimage.style.paddingTop = 0;
           this.$refs.bgimage.style.height = `${RESERVE_HEIGHT}px`;
+          this.$refs.play.style.display = 'none';
         } else {
           this.$refs.bgimage.style.paddingTop = '70%';
           this.$refs.bgimage.style.height = 0;
+          this.$refs.play.style.display = '';
         }
         this.$refs.filter.style[backdropFilter] = `blur(${blur})`;
         this.$refs.bgimage.style.zIndex = zIndex;
@@ -139,6 +162,24 @@
       height: 0
       padding-top: 70%
       background-size: cover
+      .play-wrapper
+        .play
+          position: absolute
+          bottom: 16px 
+          margin-left: 50%
+          left: -58px
+          line-height: 32px
+          width: 116px
+          height: 32px
+          padding-left: 10px
+          border: 1px solid $color-theme
+          border-radius: 8px
+          color: $color-theme
+          font-size: $font-size-medium
+          .icon
+            display: inline-block
+          .text
+            display: inline-block
     .bg-layer
       position: relative
       height: 100%
@@ -152,4 +193,8 @@
       // overflow: hidden
       .song-list-wrapper
         padding: 20px 30px
+      .loading-container
+        position: absolute
+        width: 100%
+        top: 50%
 </style>

@@ -26,14 +26,17 @@
     <keep-alive>
       <router-view></router-view>
     </keep-alive>
+    <player></player>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import MHeader from 'components/header/header';
+  import Player from 'components/player/player';
   export default {
     components: {
-      MHeader
+      MHeader,
+      Player
     }
   };
 </script>
