@@ -137,7 +137,7 @@
     bottom: 0
     right: 0
     width: 100%
-    background: $color-background
+    background: $color-background-d
     .title
       position: absolute
       top: 8px
