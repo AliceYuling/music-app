@@ -19,7 +19,7 @@ const mutations = {
   [types.SET_MODE] (state, mode) {
     state.mode = mode;
   },
-  [types.SET_CURRENTINDEX] (state, currentIndex) {
+  [types.SET_CURRENT_INDEX] (state, currentIndex) {
     state.currentIndex = currentIndex;
   }
 };

@@ -79,19 +79,15 @@
     methods: {
       onShortcutTouchStart (e) {
         let touchIndex = getData(e.target, 'index');
-        console.log('touchIndex1:' + touchIndex);
         let firstTouch = e.touches[0];
-        console.log('firstTouch1:' + firstTouch.pageY);
         this.touch.y1 = firstTouch.pageY;
         this.touch.touchIndex = touchIndex;
         this._scrollTo(touchIndex);
       },
       onShortcutTouchMove (e) {
         let firstTouch = e.touches[0];
-        console.log('firstTouch2:' + firstTouch.pageY);
         this.touch.y2 = firstTouch.pageY;
         let delta = (this.touch.y2 - this.touch.y1) / HEIGHT | 0;
-        console.log(delta);
         let moveIndex = parseInt(this.touch.touchIndex) + delta;
         this._scrollTo(moveIndex);
       },

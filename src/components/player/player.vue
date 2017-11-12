@@ -15,7 +15,7 @@
         <div class="middle-wrapper">
           <div class="middle-left">
             <div class="cd-wrapper">
-              <div class="cd">
+              <div class="cd" :class="{'cd-rotate': playing, 'rotate-pause': !playing}">
                 <img class="cd-image" :src="currentSong.image">
               </div>
             </div>
@@ -27,18 +27,25 @@
         </div>
       </div>
       <div class="bottom">
+        <div class="progress-wrapper">
+          <span class="time time-l">{{formatTime(currentTime)}}</span>
+          <div class="progress-bar-wrapper">
+            <progress-bar :percent="percent" @updatePercent="updatePercent"></progress-bar>
+          </div>
+          <span class="time time-r">{{formatTime(currentSong.duration)}}</span>
+        </div>
         <div class="operator">
           <div class="icon">
             <i class="icon-random"></i>
           </div>
-          <div class="icon">
-            <i class="icon-prev"></i>
+          <div class="icon" :class="disableCls">
+            <i class="icon-prev" @click="prev"></i>
           </div>
-          <div class="icon">
-            <i class="icon-play"></i>
+          <div class="icon" :class="disableCls">
+            <i @click="togglePlaying" :class="iconControl"></i>
           </div>
-          <div class="icon">
-            <i class="icon-next"></i>
+          <div class="icon" :class="disableCls">
+            <i class="icon-next" @click="next"></i>
           </div>
           <div class="icon">
             <i class="icon-favorite"></i>
@@ -46,7 +53,7 @@
         </div>
       </div>
     </div>
-    <div class="mini-player" v-show="!fullScreen">
+    <div class="mini-player" v-show="!fullScreen" @click="open">
       <div class="mini-image">
         <img class="image" :src="currentSong.image">
       </div>
@@ -54,33 +61,149 @@
         <p class="name" v-html="currentSong.name"></p>
         <p class="singer" v-html="currentSong.singer"></p>
       </div>
-      <div class="icon" @click="showPlayList">
+      <div class="control">
+        <progress-circle :radius="radius">
+          <i :class="miniIconControl" @click.stop.prevent="togglePlaying"></i>
+        </progress-circle>
+      </div>
+      <div class="control" @click="showPlayList">
         <i class="icon-playlist"></i>
       </div>
     </div>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import {mapGetters, mapMutations} from 'vuex';
+  import ProgressBar from 'base/progress-bar/progress-bar';
+  import ProgressCircle from 'base/progress-circle/progress-circle';
   export default {
+    data () {
+      return {
+        playReady: false,
+        currentTime: 0,
+        radius: 32
+      };
+    },
     computed: {
+      miniIconControl () {
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini';
+      },
+      iconControl () {
+        return this.playing ? 'icon-pause' : 'icon-play';
+      },
+      disableCls () {
+        return this.playReady ? '' : 'disable';
+      },
+      percent () {
+        return this.currentTime / this.currentSong.duration;
+      },
       ...mapGetters([
         'fullScreen',
         'playList',
-        'currentSong'
+        'currentSong',
+        'playing',
+        'currentIndex'
       ])
     },
     methods: {
       back () {
         this.setFullScreen(false);
       },
+      open () {
+        this.setFullScreen(true);
+      },
       showPlayList () {
         this.setFullScreen(true);
       },
+      togglePlaying () {
+        this.setPlaying(!this.playing);
+      },
+      prev () {
+        if (!this.playReady) {
+          return;
+        }
+        let index = this.currentIndex - 1;
+        if (index === -1) {
+          index = this.playList.length - 1;
+        }
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.setPlaying(true);
+        }
+        this.playReady = false;
+      },
+      next () {
+        if (!this.playReady) {
+          return;
+        }
+        let index = this.currentIndex + 1;
+        if (index === this.playList.length) {
+          index = 0;
+        }
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.setPlaying(true);
+        }
+        this.playReady = false;
+      },
+      ready () {
+        this.playReady = true;
+      },
+      error () {
+        this.playReady = true;
+      },
+      updateTime (e) {
+        this.currentTime = e.target.currentTime;
+      },
+      updatePercent (percent) {
+        this.$refs.audio.currentTime = percent * this.currentSong.duration;
+        if (!this.playing) {
+          this.togglePlaying();
+        }
+      },
+      _pad (num, n = 2) {
+        let len = num.toString().length;
+        while (len < n) {
+          num = '0' + num;
+          len++;
+        }
+        return num;
+      },
+      formatTime (time) {
+        time = time | 0;
+        const min = this._pad(time / 60 | 0);
+        const sec = this._pad(time % 60);
+        return `${min}:${sec}`;
+      },
       ...mapMutations({
-        setFullScreen: 'SET_FULLSCREEN_STATE'
+        setFullScreen: 'SET_FULLSCREEN_STATE',
+        setPlaying: 'SET_PLAYING_STATE',
+        setCurrentIndex: 'SET_CURRENT_INDEX'
       })
+    },
+    watch: {
+      currentSong () {
+        console.log(this.currentSong.url);
+        this.$nextTick(() => {
+          this.$refs.audio.play();
+        });
+      },
+      playing (newPlaying) {
+        const audio = this.$refs.audio;
+        this.$nextTick(() => {
+          if (newPlaying) {
+            audio.play();
+          } else {
+            audio.pause();
+          }
+        });
+      }
+    },
+    components: {
+      ProgressBar,
+      ProgressCircle
     }
   };
 </script>
@@ -149,9 +272,16 @@
               top: 0
               width: 80%
               border: 2px solid #ccc
-              .cd-image
-                width: 100%
+              .cd
                 border-radius: 50%
+                animation: cdRotate 30s linear infinite
+                &.cd-rotate
+                  animation-play-state: play
+                &.rotate-pause
+                  animation-play-state: paused
+                .cd-image
+                  width: 100%
+                  border-radius: 50%
           .middle-right
             width: 100%
             display: inline-block
@@ -160,6 +290,22 @@
         bottom: 0
         height: 170px
         width: 100%
+        .progress-wrapper
+          display: flex
+          .time
+            display: block
+            line-height: 30px
+            flex: 0 0 40px
+            text-align: center
+            color: $color-text-l
+            font-size: $font-size-small
+            &.time-l
+              margin-left: 20px
+            &.time-r
+              margin-right: 20px
+          .progress-bar-wrapper
+            display: inline-block
+            flex: 1
         .operator
           width: 80%
           margin: 10px auto
@@ -169,12 +315,14 @@
             width: 20%
             text-align: center
             color: $color-theme
-            font-size: $font-size-large-x       
+            font-size: $font-size-large-x
+            &.disable
+              color: $color-theme-d     
             .icon-random
               display: inline-block
             .icon-prev
               display: inline-block
-            .icon-play
+            .icon-play, .icon-pause
               display: inline-block
             .icon-next
               display: inline-block
@@ -211,10 +359,17 @@
           line-height: 32px
           font-size: $font-size-small
           color: $color-text-l
-      .icon
+      .control
         flex: 0 0 48px
         width: 48px
         line-height: 64px
-        .icon-playlist
+        .icon-playlist, .icon-play-mini, .icon-pause-mini
           color: $color-theme
+          font-size: $font-size-large-x
+          vertical-align: middle
+  @keyframes cdRotate
+    0%
+      transform: rotate(0deg)
+    100%
+      transform: rotate(360deg)
 </style>
