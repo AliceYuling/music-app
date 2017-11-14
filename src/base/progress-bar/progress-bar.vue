@@ -55,7 +55,7 @@
         this._setOffset(offsetWidth);
       },
       progressTouchEnd () {
-        this.initiated = false;
+        this.touch.initiated = false;
         this._triggerPercent();
       },
       _triggerPercent () {
@@ -64,7 +64,9 @@
         this.$emit('updatePercent', percent);
       },
       progressClick (e) {
-        this._setOffset(e.offsetX);
+        const rect = this.$refs.progressBar.getBoundingClientRect();
+        const offsetWidth = e.pageX - rect.left;
+        this._setOffset(offsetWidth);
         this._triggerPercent();
       }
     }
@@ -93,7 +95,7 @@
         .progress-btn
           position: relative
           top: 7px
-          left: 7px
+          left: 8px
           width: 16px
           height: 16px
           background: $color-theme

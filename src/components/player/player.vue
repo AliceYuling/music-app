@@ -21,7 +21,12 @@
             </div>
           </div>
           <div class="middle-right">
-            <div class="lyric">
+            <div class="lyric-wrapper">
+              <div class="lyric" v-if="currentLyric">
+                <p class="text" :class="{'current':currentLine===index}" ref="line" v-for="(line,index) in currentLyric.lines">
+                  {{line.txt}}{{index}}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -35,8 +40,8 @@
           <span class="time time-r">{{formatTime(currentSong.duration)}}</span>
         </div>
         <div class="operator">
-          <div class="icon">
-            <i class="icon-random"></i>
+          <div class="icon" @click="changeMode">
+            <i :class="iconMode"></i>
           </div>
           <div class="icon" :class="disableCls">
             <i class="icon-prev" @click="prev"></i>
@@ -70,7 +75,7 @@
         <i class="icon-playlist"></i>
       </div>
     </div>
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
 
@@ -78,12 +83,17 @@
   import {mapGetters, mapMutations} from 'vuex';
   import ProgressBar from 'base/progress-bar/progress-bar';
   import ProgressCircle from 'base/progress-circle/progress-circle';
+  import {getRandomArray} from 'common/js/utils';
+  import {playMode} from 'common/js/config.js';
+  import Lyric from 'lyric-parser';
   export default {
     data () {
       return {
         playReady: false,
         currentTime: 0,
-        radius: 32
+        radius: 32,
+        currentLyric: null,
+        currentLine: 0
       };
     },
     computed: {
@@ -99,12 +109,17 @@
       percent () {
         return this.currentTime / this.currentSong.duration;
       },
+      iconMode () {
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random';
+      },
       ...mapGetters([
         'fullScreen',
         'playList',
         'currentSong',
         'playing',
-        'currentIndex'
+        'currentIndex',
+        'mode',
+        'sequenceList'
       ])
     },
     methods: {
@@ -130,7 +145,7 @@
         }
         this.setCurrentIndex(index);
         if (!this.playing) {
-          this.setPlaying(true);
+          this.togglePlaying();
         }
         this.playReady = false;
       },
@@ -144,9 +159,44 @@
         }
         this.setCurrentIndex(index);
         if (!this.playing) {
-          this.setPlaying(true);
+          this.togglePlaying();
         }
         this.playReady = false;
+      },
+      end () {
+        if (this.mode === playMode.loop) {
+          this.loop();
+        } else {
+          this.next();
+        }
+      },
+      loop () {
+        this.$refs.audio.currentTime = 0;
+        this.$refs.audio.play();
+      },
+      changeMode () {
+        let modeIndex = (this.mode + 1) % 3;
+        this.setPlayMode(modeIndex);
+        console.log(this.mode);
+        let list = null;
+        if (this.mode === playMode.random) {                                      // 随机播放
+          console.log('random');
+          list = getRandomArray(this.playList);
+          console.log(this.sequenceList);
+        } else {
+          console.log('sequence');
+          list = this.sequenceList;
+          console.log(list);
+        }
+        console.log(list);
+        this.setPlayList(list);
+        this.resetCurrentIndex(list, this.currentSong);
+      },
+      resetCurrentIndex (list, song) {
+        let index = list.findIndex((item) => {
+          return item.id === this.currentSong.id;
+        });
+        this.setCurrentIndex(index);
       },
       ready () {
         this.playReady = true;
@@ -177,17 +227,36 @@
         const sec = this._pad(time % 60);
         return `${min}:${sec}`;
       },
+      getLyric () {
+        this.currentSong.getLyric().then((lyric) => {
+          this.currentLyric = new Lyric(lyric, this.handleLyric);
+          if (this.playing) {
+            this.currentLyric.play();
+          }
+          console.log(this.currentLyric);
+        });
+      },
+      handleLyric ({lineNum, txt}) {
+        this.currentLine = lineNum;
+        console.log(this.currentLine);
+        // this.playingLyric = txt;
+      },
       ...mapMutations({
         setFullScreen: 'SET_FULLSCREEN_STATE',
         setPlaying: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX'
+        setCurrentIndex: 'SET_CURRENT_INDEX',
+        setPlayMode: 'SET_MODE',
+        setPlayList: 'SET_PLAY_LIST'
       })
     },
     watch: {
-      currentSong () {
-        console.log(this.currentSong.url);
+      currentSong (newSong, oldSong) {
+        if (newSong.id === oldSong.id) {
+          return;
+        }
         this.$nextTick(() => {
           this.$refs.audio.play();
+          this.getLyric();
         });
       },
       playing (newPlaying) {
@@ -259,7 +328,6 @@
         font-size: 0
         .middle-wrapper
           .middle-left
-            display: inline-block
             position: relative
             left: 0
             top: 0
@@ -283,8 +351,26 @@
                   width: 100%
                   border-radius: 50%
           .middle-right
-            width: 100%
+            position: relative
             display: inline-block
+            width: 100%
+            height: 0
+            padding-top: 100%
+            overflow: hidden
+            .lyric-wrapper
+              position: absolute
+              left: 10%
+              top: 0
+              width: 80%
+              .lyric
+                .text
+                  width: 100%
+                  line-height: 40px
+                  text-align: center
+                  color: $color-text-l
+                  font-size: $font-size-medium
+                &.current
+                  color: $color-text
       .bottom
         position: fixed
         bottom: 0
@@ -295,14 +381,14 @@
           .time
             display: block
             line-height: 30px
-            flex: 0 0 40px
+            flex: 0 0 50px
             text-align: center
             color: $color-text-l
             font-size: $font-size-small
             &.time-l
-              margin-left: 20px
+              margin-left: 10px
             &.time-r
-              margin-right: 20px
+              margin-right: 10px
           .progress-bar-wrapper
             display: inline-block
             flex: 1

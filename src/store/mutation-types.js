@@ -4,9 +4,9 @@ export const SET_PLAYING_STATE = 'SET_PLAYING_STATE';
 
 export const SET_FULLSCREEN_STATE = 'SET_FULLSCREEN_STATE';
 
-export const SET_PLAYLIST = 'SET_PLAYLIST';
+export const SET_PLAY_LIST = 'SET_PLAY_LIST';
 
-export const SET_SEQUENCELIST = 'SET_SEQUENCELIST';
+export const SET_SEQUENCE_LIST = 'SET_SEQUENCE_LIST';
 
 export const SET_MODE = 'SET_MODE';
 
