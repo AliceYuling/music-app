@@ -11,27 +11,27 @@
         <h1 class="song-name" v-html="currentSong.name"></h1>
         <h2 class="singer" v-html="currentSong.singer"></h2>
       </div>
-      <div class="middle">
-        <div class="middle-wrapper">
-          <div class="middle-left">
-            <div class="cd-wrapper">
-              <div class="cd" :class="{'cd-rotate': playing, 'rotate-pause': !playing}">
-                <img class="cd-image" :src="currentSong.image">
-              </div>
-            </div>
-          </div>
-          <div class="middle-right">
-            <div class="lyric-wrapper">
-              <div class="lyric" v-if="currentLyric">
-                <p class="text" :class="{'current':currentLine===index}" ref="line" v-for="(line,index) in currentLyric.lines">
-                  {{line.txt}}{{index}}
-                </p>
-              </div>
+      <div class="middle" @touchstart="middleTouchStart" @touchmove.prevent="middleTouchMove" @touchend="middleTouchEnd">
+        <div class="middle-left">
+          <div class="cd-wrapper">
+            <div class="cd" :class="{'cd-rotate': playing, 'rotate-pause': !playing}">
+              <img class="cd-image" :src="currentSong.image">
             </div>
           </div>
         </div>
+        <scroll class="middle-right" :data="currentLyric && currentLyric.lines" ref="lyricList">
+          <div class="lyric-wrapper">
+            <div class="lyric" v-if="currentLyric">
+              <p class="text" :class="{'current':currentLine===index}" ref="lyricLine" v-for="(line,index) in currentLyric.lines">{{line.txt}}</p>
+            </div>
+          </div>
+        </scroll>
       </div>
       <div class="bottom">
+        <div class="dot-wrapper">
+          <span class="dot" :class="{'current':currentShow==='cd'}"></span>
+          <span class="dot" :class="{'current':currentShow==='lyric'}"></span>
+        </div>
         <div class="progress-wrapper">
           <span class="time time-l">{{formatTime(currentTime)}}</span>
           <div class="progress-bar-wrapper">
@@ -86,6 +86,11 @@
   import {getRandomArray} from 'common/js/utils';
   import {playMode} from 'common/js/config.js';
   import Lyric from 'lyric-parser';
+  import Scroll from 'base/scroll/scroll';
+  import {prefixStyle} from 'common/js/dom';
+
+  const transform = prefixStyle('transform');
+  // const LINE_HIEGHT = 20;
   export default {
     data () {
       return {
@@ -93,7 +98,8 @@
         currentTime: 0,
         radius: 32,
         currentLyric: null,
-        currentLine: 0
+        currentLine: 0,
+        currentShow: 'cd'
       };
     },
     computed: {
@@ -121,6 +127,9 @@
         'mode',
         'sequenceList'
       ])
+    },
+    created () {
+      this.touch = {};
     },
     methods: {
       back () {
@@ -239,7 +248,39 @@
       handleLyric ({lineNum, txt}) {
         this.currentLine = lineNum;
         console.log(this.currentLine);
-        // this.playingLyric = txt;
+        if (lineNum > 5) {
+          let lineEl = this.$refs.lyricLine[lineNum - 5];
+          console.log(lineEl);
+          this.$refs.lyricList.scrollToElement(lineEl, 1000);
+        } else {
+          this.$refs.lyricList.scrollTo(0, 0, 1000);
+        }
+        this.playingLyric = txt;
+      },
+      middleTouchStart (e) {
+        this.touch.initiated = true;
+        this.touch.startX = e.touches[0].pageX;
+        this.touch.startY = e.touches[0].pageY;
+      },
+      middleTouchMove (e) {
+        if (!this.touch.initiated) {
+          return;
+        }
+        const touch = e.touches[0];
+        const deltaX = touch.pageX - this.touch.startX;
+        const deltaY = touch.pageY - this.touch.startY;
+        console.log('deltaX' + deltaX);
+        console.log('deltaY' + deltaY);
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {                // 纵轴偏移大于横轴偏移时，不进行左右移动
+          return;
+        }
+        console.log('window' + window.innerWidth);
+        const left = this.currentShow === 'cd' ? 0 : -window.innerWidth;
+        const width = Math.min(0, Math.max(-window.innerWidth, left + deltaX));
+        this.$refs.lyricList.$el.style[transform] = `translate3d(${width}px,0,0)`;
+      },
+      middleTouchEnd () {
+
       },
       ...mapMutations({
         setFullScreen: 'SET_FULLSCREEN_STATE',
@@ -272,7 +313,8 @@
     },
     components: {
       ProgressBar,
-      ProgressCircle
+      ProgressCircle,
+      Scroll
     }
   };
 </script>
@@ -326,49 +368,48 @@
         bottom: 170px
         white-space: nowrap
         font-size: 0
-        .middle-wrapper
-          .middle-left
-            position: relative
-            left: 0
+        overflow: hidden
+        .middle-left
+          position: relative
+          display: inline-block
+          vertical-align: top
+          width: 100%
+          height: 0
+          padding-top: 80%
+          .cd-wrapper
+            position: absolute
+            left: 10%
             top: 0
-            width: 100%
-            height: 0
-            padding-top: 80%
-            .cd-wrapper
-              position: absolute
-              left: 10%
-              top: 0
-              width: 80%
-              border: 2px solid #ccc
-              .cd
+            width: 80%
+            .cd
+              border-radius: 50%
+              animation: cdRotate 30s linear infinite
+              &.cd-rotate
+                animation-play-state: play
+              &.rotate-pause
+                animation-play-state: paused
+              .cd-image
+                width: 100%
                 border-radius: 50%
-                animation: cdRotate 30s linear infinite
-                &.cd-rotate
-                  animation-play-state: play
-                &.rotate-pause
-                  animation-play-state: paused
-                .cd-image
-                  width: 100%
-                  border-radius: 50%
-          .middle-right
-            position: relative
-            display: inline-block
-            width: 100%
-            height: 0
-            padding-top: 100%
-            overflow: hidden
-            .lyric-wrapper
-              position: absolute
-              left: 10%
-              top: 0
-              width: 80%
-              .lyric
-                .text
-                  width: 100%
-                  line-height: 40px
-                  text-align: center
-                  color: $color-text-l
-                  font-size: $font-size-medium
+        .middle-right
+          display: inline-block
+          position: relative
+          vertical-align: top
+          width: 100%
+          height: 100%
+          overflow: hidden
+          .lyric-wrapper
+            position: absolute
+            left: 10%
+            top: 0
+            width: 80%
+            .lyric
+              .text
+                width: 100%
+                line-height: 40px
+                text-align: center
+                color: $color-text-l
+                font-size: $font-size-medium
                 &.current
                   color: $color-text
       .bottom
@@ -376,7 +417,21 @@
         bottom: 0
         height: 170px
         width: 100%
+        .dot-wrapper
+          width: 100%
+          text-align: center
+          .dot
+            display: inline-block
+            width: 8px
+            height: 8px
+            border-radius: 50%
+            background: $color-text-l
+            &.current
+              width: 20px
+              border-radius: 5px
+              color: $color-text
         .progress-wrapper
+          margin-top: 20px
           display: flex
           .time
             display: block
