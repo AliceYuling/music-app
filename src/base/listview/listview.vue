@@ -31,7 +31,7 @@
     </div>
   </scroll>
 </template>
-<script type="text/ecmascript-6">
+<script type="ecmascript-6">
   import Scroll from 'base/scroll/scroll';
   import {getData} from 'common/js/dom';
   import Loading from 'base/loading/loading';
@@ -120,7 +120,10 @@
       },
       selectItem (item) {
         this.$emit('select', item);
-    }
+      },
+      refresh () {
+        this.$refs.listview.refresh();
+      }
     },
     watch: {
       data () {
