@@ -1,10 +1,10 @@
 <template>
   <transition name="slide">
-    <music-list :title="title" :bgImage="bgImage" :songs="songs"></music-list>
+    <music-list :title="title" :bgImage="bgImage" :songs="songs" class="singer-detail"></music-list>
   </transition>
 </template>
 
-<script type="text/ecmascript-6">
+<script type="ecmascript-6">
   import {mapGetters} from 'vuex';
   import {getSingerDetail} from 'api/singer';
   import {ERR_OK} from 'api/config';

@@ -42,22 +42,28 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
-@import '~common/style/variable'
-  .tab
-    display: flex
-    height: 44px
-    line-height: 44px
-    font-size: $font-size-medium
-    .tab-item
-      flex: 1
-      text-align: center
-      &>a
-        display: inline-block
-        width: 100%
-        text-decoration: none
-        color: $color-text-l
-        &.router-link-active
-          .tab-link
-            color: $color-theme
-            border-bottom: 2px solid $color-theme
+  @import '~common/style/variable'
+  #app
+    position: fixed
+    top: 0
+    width: 100%
+    .tab
+      display: flex
+      margin-top: 0
+      height: 44px
+      line-height: 44px
+      font-size: $font-size-medium
+      background: $color-background
+      .tab-item
+        flex: 1
+        text-align: center
+        &>a
+          display: inline-block
+          width: 100%
+          text-decoration: none
+          color: $color-text-l
+          &.router-link-active
+            .tab-link
+              color: $color-theme
+              border-bottom: 2px solid $color-theme
 </style>
