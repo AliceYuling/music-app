@@ -1,7 +1,7 @@
 <template>
   <div class="music-list">
-    <h1 class="title">{{title}}</h1>
-    <div class="back" @click="backToSinger">
+    <h1 class="title" v-html="title"></h1>
+    <div class="back" @click="back">
       <i class="icon-back"></i>
     </div>
     <div class="background-img" :style="bgstyle" ref="bgimage">
@@ -78,8 +78,8 @@
       };
     },
     methods: {
-      backToSinger () {
-        this.$router.push('/singer');
+      back () {
+        this.$router.back();
       },
       scroll (pos) {
         this.posY = pos.y; 
@@ -152,7 +152,7 @@
     background: $color-background-d
     .title
       position: absolute
-      top: 8px
+      top: 10px
       z-index: 50
       width: 100%
       text-align: center
@@ -161,11 +161,11 @@
     .back
       position: absolute
       top: 10px
-      left: 10px
+      left: 8px
       z-index: 50
       .icon-back
         color: $color-theme
-        font-size: $font-size-large-x
+        font-size: $font-size-large
     .background-img
       position: relative
       top: 0
@@ -175,14 +175,15 @@
       padding-top: 70%
       background-size: cover
       .play-wrapper
+        position: absolute
+        z-index: 199
+        bottom: 16px 
+        margin-left: 50%
+        left: -58px
         .play
-          position: absolute
-          bottom: 16px 
-          margin-left: 50%
-          left: -58px
-          line-height: 32px
           width: 116px
           height: 32px
+          line-height: 32px
           padding-left: 10px
           border: 1px solid $color-theme
           border-radius: 8px

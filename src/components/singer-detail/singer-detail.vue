@@ -35,6 +35,7 @@
         console.log(singerId);
         if (!singerId) {
           this.$router.push('/singer');              // 获取不到id时，回退
+          return;
         }
         getSingerDetail(singerId).then((res) => {
           if (res.code === ERR_OK) {

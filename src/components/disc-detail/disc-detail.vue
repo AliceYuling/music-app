@@ -24,7 +24,7 @@
         return this.disc.dissname;
       },
       bgImage () {
-        return this.disc.imgUrl;
+        return this.disc.imgurl;
       },
       songs () {
         return [];
@@ -34,17 +34,19 @@
       ])
     },
     created () {
-      console.log(this.disc.imgUrl);
+      console.log('created;' + this.disc.imgurl);
+      console.log(this.disc);
       this._getDiscDetail(this.disc.dissid);
     },
     methods: {
       _getDiscDetail (discId) {
         if (!discId) {
           this.$router.push('/recommend');
+          return;
         }
         getDiscDetail(discId).then((res) => {
           if (res.code === ERR_OK) {
-            this._normalizeSongs(res.cdlist[0].songList);
+            this.songList = this._normalizeSongs(res.cdlist[0].songList);
           }
         });
       },
@@ -55,6 +57,7 @@
             ret.push(createSong(musicData));
           }
         })
+        return ret;
       }
     }
   };
@@ -64,7 +67,7 @@
   @import '~common/style/variable.styl'
   .disc-detail
     position: fixed
-    z-index: 100
+    z-index: 99
     top: 0
     left: 0
     bottom: 0

@@ -84,7 +84,7 @@
       },
       selectDisc (disc) {
         this.$router.push({
-          path: `/recommend/${disc.id}`
+          path: `/recommend/${disc.dissid}`
         });
         this.setDisc(disc);
       },

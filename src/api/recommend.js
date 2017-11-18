@@ -45,10 +45,9 @@ export function getDiscDetail (discId) {
     json: 1,
     utf8: 1,
     onlysong: 0,
-    hostUin: 0,
     platform: 'yqq',
     needNewCode: 0,
-    jsonpCallback: 'playlistinfoCallback'
+    hostUin: 0
   });
 
   return jsonp(url, data, options);
