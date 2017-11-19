@@ -4,7 +4,7 @@
       <ul class="rank-list">
         <li class="rank-item" v-for="item in topList" @click="selectRank(item)">
           <div class="image-wrapper">
-            <img :src="item.picUrl" width="100" height="100">
+            <img v-lazy="item.picUrl" width="100" height="100">
           </div>
           <ul class="song-list">
             <li class="song-item" v-for="(song,index) in item.songList">
@@ -14,6 +14,9 @@
           </ul>
         </li>
       </ul>
+      <div class="loading-wrapper">
+        <loading></loading>
+      </div>
       <router-view></router-view>
     </scroll>
   </div>
@@ -24,6 +27,8 @@
   import {ERR_OK} from 'api/config';
   import Scroll from 'base/scroll/scroll';
   import {playListMixin} from 'common/js/mixin';
+  import {mapMutations} from 'vuex';
+  import Loading from 'base/loading/loading';
   export default {
     mixins: [playListMixin],
     data () {
@@ -48,20 +53,25 @@
         this.$router.push({
           path: `/rank/${item.id}`
         });
+        this.setTop(item);
       },
       handlePlayList (playList) {
         const bottom = playList.length > 0 ? '63px' : '';
         this.$refs.rank.style.bottom = bottom;
         this.$refs.rankContent.refresh();
       },
+      ...mapMutations({
+        'setTop': 'SET_TOP'
+      })
     },
     components: {
-      Scroll
+      Scroll,
+      Loading
     }
   };
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style scoped lang="stylus" rel="stylesheet/stylus">
   @import '~common/style/variable.styl';
   .rank
     position: fixed

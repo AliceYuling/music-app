@@ -16,7 +16,7 @@
     <div class="bg-layer" ref="layer"></div>
     <scroll :data="songs" @scroll="scroll" :probeType="probeType" :listenScroll="listenScroll" class="list" ref="list">
       <div class="song-list-wrapper" >
-        <songlist :songs="songs" @select="selectSong"></songlist>
+        <songlist :songs="songs" @select="selectSong" :rank="rank"></songlist>
       </div>
       <div class="loading-container">
         <loading v-show="!songs.length"></loading>
@@ -51,6 +51,10 @@
       bgImage: {
         type: String,
         default: ''
+      }, 
+      rank: {
+        type: Boolean,
+        default: false
       }
     },
     mounted () {
