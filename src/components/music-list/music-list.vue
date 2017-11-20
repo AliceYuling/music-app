@@ -178,6 +178,7 @@
       height: 0
       padding-top: 70%
       background-size: cover
+      background: $color-background
       .play-wrapper
         position: absolute
         z-index: 199
